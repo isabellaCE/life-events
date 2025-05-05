@@ -4,9 +4,21 @@ import { ref } from 'vue'
 const drawer = ref(false)
 </script>
 
+<script>
+import telaCapa from './telaCapa.vue'
+
+export default {
+  name: 'App',
+  components: {
+    telaCapa
+  }
+}
+</script>
+
 <template>
   <v-app>
     <v-main style="min-height: 100vh; background: white; padding: 0">
+      <telaCapa />
       <div class="content-container">
         <div style="padding: 20px">
           <h2 class="mb-4">Life Events</h2>

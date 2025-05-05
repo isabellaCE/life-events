@@ -18,6 +18,12 @@
     </div>
   </template>
   
+  <script>
+  export default {
+    name: 'telaCapa'
+  }
+  </script>
+  
   <style scoped>
   .container {
     display: flex;
@@ -59,7 +65,7 @@
     color: white;
     border: none;
     padding: 1rem 2rem;
-    font-size: 1.2vw;
+    font-size: 1.4vw;
     border-radius: 8px;
     margin-top: 4.2vh;
   }
