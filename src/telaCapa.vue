@@ -1,23 +1,23 @@
 <template>
-    <div class="container">
-      <div class="esquerda-tela">
-        <h1>LifEvents</h1>
-  
-        <p class="texto">
-          O futuro dos seus estudos<br />
-          começa com um cronograma<br />
-          inteligente
-        </p>
-  
-        <button class="botao">Acessar</button>
-      </div>
-  
-      <div class="direita-tela">
-        <img src="./assets/calendario.svg" alt="Calendário" />
-      </div>
+  <div class="container">
+    <div class="esquerda-tela">
+      <h1>LifEvents</h1>
+
+      <p class="texto">
+        O futuro dos seus estudos<br />
+        começa com um cronograma<br />
+        inteligente
+      </p>
+
+      <button class="botao" @click="$emit('acessar')">Acessar</button>
     </div>
-  </template>
-  
+
+    <div class="direita-tela">
+      <img src="./assets/calendario.svg" alt="Calendário" />
+    </div>
+  </div>
+</template>
+
   <script>
   export default {
     name: 'telaCapa'
@@ -57,6 +57,7 @@
     font-size: 1.7vw;
     line-height: 1.3;
     margin: 0;
+    text-align: left;
   }
   
   
@@ -64,10 +65,11 @@
     background-color: #00695C;
     color: white;
     border: none;
-    padding: 1rem 2rem;
+    padding: 0.7rem 2rem;
     font-size: 1.4vw;
-    border-radius: 8px;
+    border-radius: 6px;
     margin-top: 4.2vh;
+    font-weight: bold;
   }
   
   .direita-tela {
@@ -77,9 +79,9 @@
     align-items: center;
   }
   
-  .right img {
-    width: 100%;
-    max-width: 1000px;
-    height: auto;
+  .direita-tela img {
+  width: 100%;
+  max-width: 1000px;
+  height: auto;
   }
   </style>  
