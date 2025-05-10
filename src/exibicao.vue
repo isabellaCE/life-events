@@ -8,8 +8,8 @@
     <!-- Card com a semana -->
     <div class="caixa-cronograma">
       <h2 class="subtitulo">Cronograma Inteligente</h2>
-      <div class="etiqueta" @click="mostrarCalendario = true">
-        <button>08 de maio, 2025 - 14 de maio, 2025</button>
+      <div class="etiqueta">
+        <button @click="mostrarCalendario = true">{{ textoSemana }}</button>
       </div>
     </div>
 
@@ -25,9 +25,10 @@
       </button>
       <button class="botao-circular verde">✔</button>
     </div>
+    
   </div>
 
-  <!-- Calendário sobreposto -->
+    <!-- Calendário sobreposto -->
     <div v-if="mostrarCalendario" class="calendario-overlay" @click.self="fecharCalendario">
       <div class="calendario-popup">
         <!-- Cabeçalho -->
@@ -64,10 +65,11 @@
 
         <!-- Botão check -->
         <div>
-          <button class="botao-check" @click="$emit('check')">✔</button>
+          <button class="botao-check" @click="confirmarSelecao">✔</button>
         </div>
       </div>
     </div>
+
 </template>
 
 <style scoped>
@@ -159,8 +161,6 @@
     background-color: #740000;
 }
 
-/* Calendário */
-
 .cabecalho {
   display: flex;
   justify-content: space-between;
@@ -228,12 +228,16 @@
   position: absolute;
   padding: 5px 5px;
   right: 3rem;
-  background-color: #11696A;
+  background-color: #137073;
   color: white;
   width: 42px;
   height: 42px;
   border-radius: 50%;
   font-size: 1.2rem;
+}
+
+.botao-check:hover{
+  background-color: #38A3A5;
 }
 
 .calendario-overlay {
@@ -265,6 +269,26 @@
 
 <script>
 export default {
+  props: {
+    semana: Object
+  },
+  computed: {
+    textoSemana() {
+      if (!this.semana) return ''
+      const opcoes = { day: 'numeric', month: 'long', year: 'numeric' }
+      const inicio = this.semana.inicio.toLocaleDateString('pt-BR', opcoes)
+      const fim = this.semana.fim.toLocaleDateString('pt-BR', opcoes)
+      return `${inicio} - ${fim}`
+    },
+    nomeMes() {
+      const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+        'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+      return meses[this.mesAtual];
+    }
+  },
+
+  /* Calendário */
+
   data() {
     return {
       mostrarCalendario: false,
@@ -274,13 +298,6 @@ export default {
       mesAtual: new Date().getMonth(),
       anoAtual: new Date().getFullYear(),
     };
-  },
-  computed: {
-    nomeMes() {
-      const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-        'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-      return meses[this.mesAtual];
-    }
   },
   mounted() {
     this.gerarCalendario();
@@ -360,5 +377,7 @@ export default {
     this.semanaSelecionada = null;
   }
  }
-};
+}
 </script>
+
+

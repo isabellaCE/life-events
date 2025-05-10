@@ -45,7 +45,7 @@
 
         <!-- Botão check -->
         <div>
-          <button class="botao-check" @click="$emit('check')">✔</button>
+          <button class="botao-check" @click="confirmarSelecao">✔</button>
         </div>
       </div>
     </div>
@@ -227,6 +227,21 @@ export default {
     this.gerarCalendario();
   },
   methods: {
+      confirmarSelecao() {
+    if (this.semanaSelecionada !== null) {
+      const semana = this.semanasMes[this.semanaSelecionada];
+      const [diaInicio, diaFim] = [semana[0], semana[6]];
+      
+      // Corrige mês se o dia for de fora
+      const mesInicio = diaInicio.foradoMes && semana[0].dia > 15 ? this.mesAtual - 1 : this.mesAtual;
+      const mesFim = diaFim.foradoMes && semana[6].dia < 15 ? this.mesAtual + 1 : this.mesAtual;
+
+      const dataInicio = new Date(this.anoAtual, mesInicio, diaInicio.dia);
+      const dataFim = new Date(this.anoAtual, mesFim, diaFim.dia);
+
+      this.$emit('check', { inicio: dataInicio, fim: dataFim });
+    }
+  },
   fecharCalendario() {
     this.mostrarCalendario = false;
   },

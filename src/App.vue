@@ -1,8 +1,8 @@
 <template>
   <v-app>
     <TelaCapa v-if="telaAtual === 'capa'" @acessar="mudarParaSelecaoSemana" />
-    <SelecaoSemana v-if="telaAtual === 'selecaoSemana'" @check="mudarParaExibicao"/>
-    <Exibicao v-if="telaAtual === 'exibicao'" @excluir="voltarParaSelecaoSemana"/>
+    <SelecaoSemana v-if="telaAtual === 'selecaoSemana'" @check="mudarParaExibicao" />
+    <Exibicao v-if="telaAtual === 'exibicao'" :semana="semanaSelecionada"/>
   </v-app>
 </template>
 
@@ -18,21 +18,20 @@ export default {
     SelecaoSemana,
     Exibicao
   },
-  data() {
+    data() {
     return {
-      telaAtual: 'capa'
+      telaAtual: 'capa',
+      semanaSelecionada: null
     }
   },
   methods: {
     mudarParaSelecaoSemana() {
       this.telaAtual = 'selecaoSemana'
     },
-    mudarParaExibicao(){
+    mudarParaExibicao(semana) {
+      this.semanaSelecionada = semana
       this.telaAtual = 'exibicao'
     },
-    voltarParaSelecaoSemana(){
-      this.telaAtual = 'selecaoSemana'
-    }
   }
 }
 </script>
