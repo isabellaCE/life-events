@@ -48,7 +48,6 @@
     font-size: 4.3vw;
     margin: 0;
     color: #00695C;
-    font-weight: 1000;
     align-self: flex-start;
   }
   
