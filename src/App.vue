@@ -1,8 +1,8 @@
 <template>
   <v-app>
     <TelaCapa v-if="telaAtual === 'capa'" @acessar="mudarParaSelecaoSemana" />
-    <SelecaoSemana v-if="telaAtual === 'selecaoSemana'" @check="mudarParaExibicao"/>
-    <Exibicao v-if="telaAtual === 'exibicao'" />
+    <SelecaoSemana v-if="telaAtual === 'selecaoSemana'" @check="mudarParaExibicao" />
+    <Exibicao v-if="telaAtual === 'exibicao'" :semana="semanaSelecionada"/>
   </v-app>
 </template>
 
@@ -11,24 +11,27 @@ import TelaCapa from './telaCapa.vue'
 import SelecaoSemana from './selecaoSemana.vue'
 import Exibicao from './exibicao.vue'
 
+
 export default {
   components: {
     TelaCapa,
     SelecaoSemana,
     Exibicao
   },
-  data() {
+    data() {
     return {
-      telaAtual: 'capa'
+      telaAtual: 'capa',
+      semanaSelecionada: null
     }
   },
   methods: {
     mudarParaSelecaoSemana() {
       this.telaAtual = 'selecaoSemana'
     },
-    mudarParaExibicao(){
+    mudarParaExibicao(semana) {
+      this.semanaSelecionada = semana
       this.telaAtual = 'exibicao'
-    }
+    },
   }
 }
 </script>

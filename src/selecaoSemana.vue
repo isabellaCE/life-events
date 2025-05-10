@@ -44,7 +44,9 @@
         </div>
 
         <!-- Botão check -->
-        <button class="botao-check" @click="$emit('check')">✔</button>
+        <div>
+          <button class="botao-check" @click="confirmarSelecao">✔</button>
+        </div>
       </div>
     </div>
   </div>
@@ -72,7 +74,7 @@
   top: 3vh;
   left: 4vw;
   font-size: 4.4vw;
-  color: #00695C;
+  color: #137073;
 }
 
 .texto{
@@ -82,7 +84,7 @@
 }
 
 .botao {
-  background-color: #00695C;
+  background-color: #137073;
   color: white;
   border: none;
   padding: 0.5rem 2rem;
@@ -92,6 +94,9 @@
   font-weight: bold;
 }
 
+.botao:hover{
+  background-color: #38A3A5;
+}
 
 .cabecalho {
   display: flex;
@@ -158,14 +163,18 @@
 
 .botao-check {
   position: absolute;
-  bottom: 0.4rem;
-  right: 1rem;
-  background-color: #11696A;
+  padding: 5px 5px;
+  right: 3rem;
+  background-color: #137073;
   color: white;
   width: 42px;
   height: 42px;
   border-radius: 50%;
   font-size: 1.2rem;
+}
+
+.botao-check:hover{
+  background-color: #38A3A5;
 }
 
 .calendario-overlay {
@@ -187,6 +196,7 @@
   padding: 2rem;
   box-shadow: 0 2px 12px rgba(0,0,0,0.15);
   width: 650px;
+  height: 460px;
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -217,6 +227,21 @@ export default {
     this.gerarCalendario();
   },
   methods: {
+      confirmarSelecao() {
+    if (this.semanaSelecionada !== null) {
+      const semana = this.semanasMes[this.semanaSelecionada];
+      const [diaInicio, diaFim] = [semana[0], semana[6]];
+      
+      // Corrige mês se o dia for de fora
+      const mesInicio = diaInicio.foradoMes && semana[0].dia > 15 ? this.mesAtual - 1 : this.mesAtual;
+      const mesFim = diaFim.foradoMes && semana[6].dia < 15 ? this.mesAtual + 1 : this.mesAtual;
+
+      const dataInicio = new Date(this.anoAtual, mesInicio, diaInicio.dia);
+      const dataFim = new Date(this.anoAtual, mesFim, diaFim.dia);
+
+      this.$emit('check', { inicio: dataInicio, fim: dataFim });
+    }
+  },
   fecharCalendario() {
     this.mostrarCalendario = false;
   },
