@@ -47,7 +47,7 @@
   h1 {
     font-size: 4.3vw;
     margin: 0;
-    color: #00695C;
+    color: #137073;
     align-self: flex-start;
   }
   
@@ -61,7 +61,7 @@
   
   
   .botao {
-    background-color: #00695C;
+    background-color: #137073;
     color: white;
     border: none;
     padding: 0.7rem 2rem;
@@ -69,6 +69,10 @@
     border-radius: 6px;
     margin-top: 4.2vh;
     font-weight: bold;
+  }
+
+  .botao:hover{
+  background-color: #38A3A5;
   }
   
   .direita-tela {
