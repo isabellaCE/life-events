@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import telaCapa from './src/telaCapa.vue';
 import selecaoSemana from './src/selecaoSemana.vue';
-import exibicao from './src/exibicao.vue';
 
 const routes = [
   {
@@ -17,13 +16,7 @@ const routes = [
   {
     path: '/exibicao',
     name: 'Exibicao',
-    component: exibicao,
-    props: route => ({
-      semana: {
-        inicio: new Date(route.query.inicio),
-        fim: new Date(route.query.fim)
-      }
-    })
+    component: () => import('./src/exibicao.vue')
   },
   {
     path: '/:catchAll(.*)',

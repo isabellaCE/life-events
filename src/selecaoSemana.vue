@@ -1,88 +1,131 @@
 <template>
-  <div class="SelecaoSemana-container-principal">
-    <h1 class="SelecaoSemana-titulo">LifEvents</h1>
+  <div class="SelecaoSemana-ContainerPrincipal">
+    <h1 class="SelecaoSemana-Titulo">LifEvents</h1>
 
-    <div :class="['SelecaoSemana-conteudo-central', { desfocado: mostrarCalendario }]">
-      <p class="SelecaoSemana-texto">Selecione a semana em que deseja organizar</p>
-      <button class="SelecaoSemana-botao" @click="mostrarCalendario = true">Selecionar</button>
+    <div :class="['SelecaoSemana-ConteudoCentral', { desfocado: mostrarCalendario }]">
+      <p class="SelecaoSemana-Texto">Selecione a semana em que deseja organizar</p>
+      <v-btn class="SelecaoSemana-Botao" @click="mostrarCalendario = true">Selecionar</v-btn>
     </div>
 
-    <div v-if="mostrarCalendario" class="SelecaoSemana-calendario-overlay" @click.self="fecharCalendario">
-      <div class="SelecaoSemana-calendario-popup">
-        <div class="SelecaoSemana-cabecalho">
-          <button class="SelecaoSemana-navegar" @click="anteriorMes">←</button>
-          <span class="SelecaoSemana-mes-ano">{{ nomeMes }} {{ anoAtual }}</span>
-          <button class="SelecaoSemana-navegar" @click="proximoMes">→</button>
+    <div v-if="mostrarCalendario" class="SelecaoSemana-CalendarioOverlay" @click.self="fecharCalendario">
+      <div class="SelecaoSemana-CalendarioPopup">
+        <div class="SelecaoSemana-Cabecalho">
+          <v-btn class="SelecaoSemana-Navegar" @click="anteriorMes">←</v-btn>
+          <span class="SelecaoSemana-MesAno">{{ nomeMes }} {{ anoAtual }}</span>
+          <v-btn class="SelecaoSemana-Navegar" @click="proximoMes">→</v-btn>
         </div>
 
-        <div class="SelecaoSemana-dias-semana">
+        <div class="SelecaoSemana-DiasSemana">
           <div v-for="(dia, i) in diasSemana" :key="i">{{ dia }}</div>
         </div>
 
-        <div class="SelecaoSemana-dias-mes">
-          <div
-            v-for="(semana, i) in semanasMes"
-            :key="i"
-            class="SelecaoSemana-semana"
-            :class="{ 'SelecaoSemana-selecionada': semanaSelecionada === i }"
-            @click="selecionarSemana(i)"
-          >
-            <div
-              v-for="(dia, j) in semana"
-              :key="j"
-              class="SelecaoSemana-dia"
-              :class="{ 'SelecaoSemana-vazio': !dia.dia, 'SelecaoSemana-fora': dia.foradoMes }"
-            >
+        <div class="SelecaoSemana-DiasMes">
+          <div v-for="(semana, i) in semanasMes" :key="i" class="SelecaoSemana-Semana"
+            :class="{ 'SelecaoSemana-Selecionada': semanaSelecionada === i }" @click="selecionarSemana(i)">
+            <div v-for="(dia, j) in semana" :key="j" class="SelecaoSemana-Dia"
+              :class="{ 'SelecaoSemana-vazio': !dia.dia, 'SelecaoSemana-Fora': dia.foradoMes }">
               {{ dia.dia || '' }}
             </div>
           </div>
         </div>
 
-        <div>
-          <button class="SelecaoSemana-botao-check" @click="confirmarSelecao">✔</button>
+        <div class="SelecaoSemana-RodapeBotao">
+          <v-btn icon class="SelecaoSemana-BotaoCheck" @click="confirmarSelecao">✔</v-btn>
         </div>
       </div>
     </div>
   </div>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      mostrarCalendario: false,
-      diasSemana: ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'],
-      semanasMes: [],
-      semanaSelecionada: null,
-      mesAtual: new Date().getMonth(),
-      anoAtual: new Date().getFullYear(),
-    };
-  },
-  computed: {
-    nomeMes() {
-      const meses = [
-        'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-        'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
-      ];
-      return meses[this.mesAtual];
+<script setup>
+import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+
+function navegarParaExibicao(inicio, fim) {
+  router.push({
+    name: 'exibicao',
+    query: {
+      inicio: inicio.toISOString().split('T')[0],
+      fim: fim.toISOString().split('T')[0]
     }
-  },
-  mounted() {
-    this.gerarCalendario();
-  },
-  methods: {
-    confirmarSelecao() {
-  if (this.semanaSelecionada !== null) {
-    const semana = this.semanasMes[this.semanaSelecionada];
+  })
+}
+
+const mostrarCalendario = ref(false);
+const diasSemana = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
+const semanasMes = ref([]);
+const semanaSelecionada = ref(null);
+const mesAtual = ref(new Date().getMonth());
+const anoAtual = ref(new Date().getFullYear());
+
+const nomeMes = computed(() => {
+  const meses = [
+    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+  ];
+  return meses[mesAtual.value];
+});
+
+function gerarCalendario() {
+  const primeiroDia = new Date(anoAtual.value, mesAtual.value, 1);
+  const ultimoDia = new Date(anoAtual.value, mesAtual.value + 1, 0);
+  const totalDias = ultimoDia.getDate();
+  const diaSemanaInicio = primeiroDia.getDay();
+  const diaSemanaFim = ultimoDia.getDay();
+
+  const semanas = [];
+  let semana = [];
+
+  if (diaSemanaInicio !== 0) {
+    const ultimoDiaMesAnterior = new Date(anoAtual.value, mesAtual.value, 0).getDate();
+    for (let i = diaSemanaInicio; i > 0; i--) {
+      semana.push({
+        dia: ultimoDiaMesAnterior - i + 1,
+        foradoMes: true
+      });
+    }
+  }
+
+  for (let dia = 1; dia <= totalDias; dia++) {
+    semana.push({ dia, foradoMes: false });
+
+    if (semana.length === 7) {
+      semanas.push(semana);
+      semana = [];
+    }
+  }
+
+  if (semana.length > 0 && diaSemanaFim !== 6) {
+    let diaProximo = 1;
+    while (semana.length < 7) {
+      semana.push({ dia: diaProximo++, foradoMes: true });
+    }
+    semanas.push(semana);
+  } else if (semana.length === 7) {
+    semanas.push(semana);
+  }
+
+  semanasMes.value = semanas;
+}
+
+function selecionarSemana(index) {
+  semanaSelecionada.value = index;
+}
+
+function confirmarSelecao() {
+  if (semanaSelecionada.value !== null) {
+    const semana = semanasMes.value[semanaSelecionada.value];
     const [diaInicio, diaFim] = [semana[0], semana[6]];
 
-    const mesInicio = diaInicio.foradoMes && diaInicio.dia > 15 ? this.mesAtual - 1 : this.mesAtual;
-    const mesFim = diaFim.foradoMes && diaFim.dia < 15 ? this.mesAtual + 1 : this.mesAtual;
+    const mesInicio = diaInicio.foradoMes && diaInicio.dia > 15 ? mesAtual.value - 1 : mesAtual.value;
+    const mesFim = diaFim.foradoMes && diaFim.dia < 15 ? mesAtual.value + 1 : mesAtual.value;
 
-    const dataInicio = new Date(this.anoAtual, mesInicio, diaInicio.dia);
-    const dataFim = new Date(this.anoAtual, mesFim, diaFim.dia);
+    const dataInicio = new Date(anoAtual.value, mesInicio, diaInicio.dia);
+    const dataFim = new Date(anoAtual.value, mesFim, diaFim.dia);
 
-    this.$router.push({
+    router.push({
       name: 'Exibicao',
       query: {
         inicio: dataInicio.toISOString(),
@@ -90,85 +133,42 @@ export default {
       }
     });
   }
-},
-
-    fecharCalendario() {
-      this.mostrarCalendario = false;
-    },
-    gerarCalendario() {
-      const primeiroDia = new Date(this.anoAtual, this.mesAtual, 1);
-      const ultimoDia = new Date(this.anoAtual, this.mesAtual + 1, 0);
-      const totalDias = ultimoDia.getDate();
-      const diaSemanaInicio = primeiroDia.getDay();
-      const diaSemanaFim = ultimoDia.getDay();
-
-      const semanas = [];
-      let semana = [];
-
-      if (diaSemanaInicio !== 0) {
-        const ultimoDiaMesAnterior = new Date(this.anoAtual, this.mesAtual, 0).getDate();
-        for (let i = diaSemanaInicio; i > 0; i--) {
-          semana.push({
-            dia: ultimoDiaMesAnterior - i + 1,
-            foradoMes: true
-          });
-        }
-      }
-
-      for (let dia = 1; dia <= totalDias; dia++) {
-        semana.push({ dia, foradoMes: false });
-
-        if (semana.length === 7) {
-          semanas.push(semana);
-          semana = [];
-        }
-      }
-
-      if (semana.length > 0 && diaSemanaFim !== 6) {
-        let diaProximo = 1;
-        while (semana.length < 7) {
-          semana.push({ dia: diaProximo++, foradoMes: true });
-        }
-        semanas.push(semana);
-      } else if (semana.length === 7) {
-        semanas.push(semana);
-      }
-
-      this.semanasMes = semanas;
-    },
-    selecionarSemana(index) {
-      this.semanaSelecionada = index;
-    },
-    proximoMes() {
-      if (this.mesAtual === 11) {
-        this.mesAtual = 0;
-        this.anoAtual++;
-      } else {
-        this.mesAtual++;
-      }
-      this.gerarCalendario();
-      this.semanaSelecionada = null;
-    },
-    anteriorMes() {
-      if (this.mesAtual === 0) {
-        this.mesAtual = 11;
-        this.anoAtual--;
-      } else {
-        this.mesAtual--;
-      }
-      this.gerarCalendario();
-      this.semanaSelecionada = null;
-    }
-  }
-};
-</script>
-
-<style>
-html {
-  overflow: hidden !important;
 }
 
-.SelecaoSemana-container-principal{
+function fecharCalendario() {
+  mostrarCalendario.value = false;
+}
+
+function proximoMes() {
+  if (mesAtual.value === 11) {
+    mesAtual.value = 0;
+    anoAtual.value++;
+  } else {
+    mesAtual.value++;
+  }
+  gerarCalendario();
+  semanaSelecionada.value = null;
+}
+
+function anteriorMes() {
+  if (mesAtual.value === 0) {
+    mesAtual.value = 11;
+    anoAtual.value--;
+  } else {
+    mesAtual.value--;
+  }
+  gerarCalendario();
+  semanaSelecionada.value = null;
+}
+
+onMounted(() => {
+  gerarCalendario();
+});
+</script>
+
+
+<style>
+.SelecaoSemana-ContainerPrincipal {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -177,13 +177,13 @@ html {
   background-color: white;
 }
 
-.SelecaoSemana-conteudo-central{
+.SelecaoSemana-ConteudoCentral {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-.SelecaoSemana-titulo{
+.SelecaoSemana-Titulo {
   position: absolute;
   top: 3vh;
   left: 4vw;
@@ -191,28 +191,26 @@ html {
   color: #137073;
 }
 
-.SelecaoSemana-texto{
+.SelecaoSemana-Texto {
   font-size: 2vw;
   color: #757575;
   margin: 3.5rem;
 }
 
-.SelecaoSemana-botao {
+.SelecaoSemana-Botao {
   background-color: #137073;
   color: white;
-  border: none;
-  padding: 0.5rem 2rem;
-  font-size: 1.4vw;
-  border-radius: 6px;
   margin-top: 4.2vh;
+  font-size: 1.2vw;
   font-weight: bold;
+  width: 11.5vw;
 }
 
-.SelecaoSemana-botao:hover{
+.SelecaoSemana-Botao:hover {
   background-color: #38A3A5;
 }
 
-.SelecaoSemana-cabecalho {
+.SelecaoSemana-Cabecalho {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -221,7 +219,7 @@ html {
   color: #777;
 }
 
-.SelecaoSemana-navegar {
+.SelecaoSemana-Navegar {
   background: none;
   border: none;
   font-size: 1.5rem;
@@ -229,12 +227,12 @@ html {
   color: #777;
 }
 
-.SelecaoSemana-mes-ano {
+.SelecaoSemana-MesAno {
   flex: 1;
   text-align: center;
 }
 
-.SelecaoSemana-dias-semana {
+.SelecaoSemana-DiasSemana {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   text-align: center;
@@ -242,13 +240,15 @@ html {
   color: #888;
 }
 
-.SelecaoSemana-dias-mes {
+.SelecaoSemana-DiasMes {
+  flex: 1;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
 }
 
-.SelecaoSemana-semana {
+.SelecaoSemana-Semana {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   text-align: center;
@@ -257,41 +257,41 @@ html {
   cursor: pointer;
 }
 
-.SelecaoSemana-semana:hover {
+.SelecaoSemana-Semana:hover {
   background-color: #38A3A5;
   color: white;
 }
 
-.SelecaoSemana-selecionada {
+.SelecaoSemana-Selecionada {
   background-color: #38A3A5 !important;
   color: white;
 }
 
-.SelecaoSemana-fora {
+.SelecaoSemana-Fora {
   color: #bbb;
 }
 
-.SelecaoSemana-dia {
+.SelecaoSemana-Dia {
   padding: 0.8rem 0;
 }
 
-.SelecaoSemana-botao-check {
-  position: absolute;
-  padding: 5px 5px;
-  right: 3rem;
+.SelecaoSemana-RodapeBotao {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.SelecaoSemana-BotaoCheck {
   background-color: #137073;
   color: white;
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
   font-size: 1.2rem;
 }
 
-.SelecaoSemana-botao-check:hover{
+.SelecaoSemana-BotaoCheck:hover {
   background-color: #38A3A5;
 }
 
-.SelecaoSemana-calendario-overlay {
+.SelecaoSemana-CalendarioOverlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -304,16 +304,18 @@ html {
   align-items: center;
 }
 
-.SelecaoSemana-calendario-popup {
+.SelecaoSemana-CalendarioPopup {
   background-color: white;
   border-radius: 12px;
   padding: 2rem;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
-  width: 650px;
-  height: 460px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  width: 90vw;
+  max-width: 650px;
+  max-height: 90vh;
   display: flex;
   flex-direction: column;
   gap: 1rem;
   position: relative;
+  overflow: hidden;
 }
 </style>
