@@ -7,8 +7,11 @@
       <v-btn class="Exibicao-Etiqueta" @click="mostrarCalendario = true" :disabled="confirmarTrocaSemana">{{ textoSemana
       }}</v-btn>
       <div class="Exibicao-ListaTasks">
-        <div v-for="(evento, index) in task" :key="index"
-          :class="['Exibicao-Cartao', index % 2 === 0 ? 'Exibicao-CartaoCor1' : 'Exibicao-CartaoCor2']">
+        <div v-for="(evento, index) in task" :key="index" :class="[
+          'Exibicao-Cartao',
+          index % 2 === 0 ? 'Exibicao-CartaoCor1' : 'Exibicao-CartaoCor2',
+          'Exibicao-CartaoHover'
+        ]" @click="editarTask(evento)">
           <div class="Exibicao-TituloTaks">{{ evento.nome }}</div>
           <div class="Exibicao-Horario">{{ evento.horarioInicio }} - {{ evento.horarioFim }}</div>
           <div class="Exibicao-Data">
@@ -57,7 +60,7 @@
 
   <CalendarioPopup v-if="mostrarCalendario" @confirmar-semana="selecionarSemana" @fechar="mostrarCalendario = false" />
 
-  <CadastroEvento :show="addTask" @close="addTask = false" />
+  <CadastroEvento :show="addTask" :task="taskSelecionada" @close="addTask = false; taskSelecionada = null" />
 </template>
 
 <script setup>
@@ -75,21 +78,13 @@ const excluirTasks = ref(false)
 const confirmarTrocaSemana = ref(false)
 const novaSemanaTemp = ref({ inicio: null, fim: null })
 
-const semanaSalva = JSON.parse(localStorage.getItem('semanaSelecionada'))
+const { inicio, fim } = route.query
 
-if (semanaSalva && semanaSalva.inicio && semanaSalva.fim) {
-  const dataInicio = new Date(semanaSalva.inicio)
-  const dataFim = new Date(semanaSalva.fim)
+if (inicio && fim) {
+  const dataInicio = new Date(inicio)
+  const dataFim = new Date(fim)
   const opcoes = { day: 'numeric', month: 'long', year: 'numeric' }
   textoSemana.value = `${dataInicio.toLocaleDateString('pt-BR', opcoes)} - ${dataFim.toLocaleDateString('pt-BR', opcoes)}`
-} else {
-  const { inicio, fim } = route.query
-  if (inicio && fim) {
-    const dataInicio = new Date(inicio)
-    const dataFim = new Date(fim)
-    const opcoes = { day: 'numeric', month: 'long', year: 'numeric' }
-    textoSemana.value = `${dataInicio.toLocaleDateString('pt-BR', opcoes)} - ${dataFim.toLocaleDateString('pt-BR', opcoes)}`
-  }
 }
 
 watchEffect(() => {
@@ -121,17 +116,18 @@ function confirmarTroca() {
   const opcoes = { day: 'numeric', month: 'long', year: 'numeric' }
 
   textoSemana.value = `${inicio.toLocaleDateString('pt-BR', opcoes)} - ${fim.toLocaleDateString('pt-BR', opcoes)}`
-
-  localStorage.setItem('semanaSelecionada', JSON.stringify({
-    inicio: inicio.toISOString(),
-    fim: fim.toISOString()
-  }))
-
   localStorage.removeItem('tasks')
   task.value = []
 
   confirmarTrocaSemana.value = false
   mostrarCalendario.value = false
+}
+
+const taskSelecionada = ref(null)
+
+function editarTask(evento) {
+  taskSelecionada.value = evento
+  addTask.value = true
 }
 </script>
 
@@ -241,8 +237,16 @@ function confirmarTroca() {
   background-color: #38A3A5;
 }
 
+.Exibicao-CartaoCor1:hover {
+  cursor: pointer;
+}
+
 .Exibicao-CartaoCor2 {
   background-color: #137073;
+}
+
+.Exibicao-CartaoCor2:hover {
+  cursor: pointer;
 }
 
 .Exibicao-TituloTaks {
