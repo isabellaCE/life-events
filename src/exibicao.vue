@@ -78,13 +78,21 @@ const excluirTasks = ref(false)
 const confirmarTrocaSemana = ref(false)
 const novaSemanaTemp = ref({ inicio: null, fim: null })
 
-const { inicio, fim } = route.query
+const semanaSalva = JSON.parse(localStorage.getItem('semanaSelecionada'))
 
-if (inicio && fim) {
-  const dataInicio = new Date(inicio)
-  const dataFim = new Date(fim)
+if (semanaSalva && semanaSalva.inicio && semanaSalva.fim) {
+  const dataInicio = new Date(semanaSalva.inicio)
+  const dataFim = new Date(semanaSalva.fim)
   const opcoes = { day: 'numeric', month: 'long', year: 'numeric' }
   textoSemana.value = `${dataInicio.toLocaleDateString('pt-BR', opcoes)} - ${dataFim.toLocaleDateString('pt-BR', opcoes)}`
+} else {
+  const { inicio, fim } = route.query
+  if (inicio && fim) {
+    const dataInicio = new Date(inicio)
+    const dataFim = new Date(fim)
+    const opcoes = { day: 'numeric', month: 'long', year: 'numeric' }
+    textoSemana.value = `${dataInicio.toLocaleDateString('pt-BR', opcoes)} - ${dataFim.toLocaleDateString('pt-BR', opcoes)}`
+  }
 }
 
 watchEffect(() => {
@@ -116,6 +124,12 @@ function confirmarTroca() {
   const opcoes = { day: 'numeric', month: 'long', year: 'numeric' }
 
   textoSemana.value = `${inicio.toLocaleDateString('pt-BR', opcoes)} - ${fim.toLocaleDateString('pt-BR', opcoes)}`
+
+  localStorage.setItem('semanaSelecionada', JSON.stringify({
+    inicio: inicio.toISOString(),
+    fim: fim.toISOString()
+  }))
+
   localStorage.removeItem('tasks')
   task.value = []
 
