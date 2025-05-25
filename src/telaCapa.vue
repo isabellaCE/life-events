@@ -1,40 +1,35 @@
 <template>
-  <div class="TelaCapa-container">
-    <div class="TelaCapa-esquerda-tela">
-      <h1 class="TelaCapa-titulo">LifEvents</h1>
+  <div class="TelaCapa-Container">
+    <div class="TelaCapa-EsquerdaTela">
+      <h1 class="TelaCapa-Titulo">LifEvents</h1>
 
-      <p class="TelaCapa-texto">
+      <p class="TelaCapa-Texto">
         O futuro dos seus estudos<br />
         começa com um cronograma<br />
         inteligente
       </p>
 
-      <button class="TelaCapa-botao" @click="irParaSelecaoSemana">Acessar</button>
+      <v-btn class="TelaCapa-Botao" @click="irParaSelecaoSemana">Acessar</v-btn>
     </div>
 
-    <div class="TelaCapa-direita-tela">
+    <div class="TelaCapa-DireitaTela">
       <img src="./assets/calendario.svg" alt="Calendário" />
     </div>
   </div>
 </template>
 
-<script>
-export default {
-  name: 'telaCapa',
-  methods: {
-    irParaSelecaoSemana() {
-      this.$router.push('/selecao-semana');
-    }
-  }
+<script setup>
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+
+function irParaSelecaoSemana() {
+  router.push('/selecao-semana');
 }
 </script>
 
 <style scoped>
-html {
-  overflow: hidden !important;
-}
-
-.TelaCapa-container {
+.TelaCapa-Container {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -44,7 +39,7 @@ html {
   background-color: white;
 }
 
-.TelaCapa-esquerda-tela {
+.TelaCapa-EsquerdaTela {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -53,14 +48,14 @@ html {
   flex: 1;
 }
 
-.TelaCapa-titulo {
+.TelaCapa-Titulo {
   font-size: 4.3vw;
   margin: 0;
   color: #137073;
   align-self: flex-start;
 }
 
-.TelaCapa-texto {
+.TelaCapa-Texto {
   color: #757575;
   font-size: 1.7vw;
   line-height: 1.3;
@@ -68,29 +63,22 @@ html {
   text-align: left;
 }
 
-.TelaCapa-botao {
+.TelaCapa-Botao {
   background-color: #137073;
   color: white;
-  border: none;
-  padding: 0.7rem 2rem;
-  font-size: 1.4vw;
-  border-radius: 6px;
   margin-top: 4.2vh;
   font-weight: bold;
+  width: 11.5vw;
 }
 
-.TelaCapa-botao:hover {
-  background-color: #38A3A5;
-}
-
-.TelaCapa-direita-tela {
+.TelaCapa-DireitaTela {
   flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-.TelaCapa-direita-tela img {
+.TelaCapa-DireitaTela img {
   width: 100%;
   max-width: 1000px;
   height: auto;
