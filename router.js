@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import telaCapa from './src/telaCapa.vue';
 import selecaoSemana from './src/selecaoSemana.vue';
 import exibicao from './src/exibicao.vue';
+import Planner from './src/Planner.vue';
 
 const routes = [
   {
@@ -24,6 +25,11 @@ const routes = [
         fim: new Date(route.query.fim)
       }
     })
+  },
+  {
+    path: '/planner',
+    name: 'Planner',
+    component: Planner
   },
   {
     path: '/:catchAll(.*)',
