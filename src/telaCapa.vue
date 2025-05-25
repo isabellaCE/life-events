@@ -71,6 +71,10 @@ function irParaSelecaoSemana() {
   width: 11.5vw;
 }
 
+.TelaCapa-Botao:hover{
+  background-color: #38A3A5;
+}
+
 .TelaCapa-DireitaTela {
   flex: 1;
   display: flex;
