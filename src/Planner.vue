@@ -1,31 +1,39 @@
 <template>
   <div class="planner-container">
     <div class="planner-header">
-      <span>PLANNER</span>
-      <button>Exportar</button>
-      <button>Excluir</button>
+      <div class="title">LifEvents</div>
+      <div>
+        <v-btn color="#137073">
+          Exportar <v-icon right>mdi-download</v-icon>
+        </v-btn>
+      </div>
+      <div>
+        <v-btn color="#A20000">
+          Excluir <v-icon right>mdi-delete</v-icon>
+        </v-btn>
+      </div>
     </div>
-
-    <!-- <MenuAddTask :show="true"></MenuAddTask> -->
 
     <div class="calendar-grid">
       <div class="time-column">
-        <div class="time-header"></div> <div v-for="hour in hours" :key="hour" class="hour-slot">
-          {{ hour }}:00
+        <div class="time-header"></div>
+        <div v-for="hour in hours" :key="hour" class="hour-slot">
+          {{ String(hour).padStart(2, '0') }}:00
         </div>
       </div>
 
       <div v-for="day in weekDays" :key="day.date" class="day-column">
         <div class="day-header">
-          <span class="day-name">{{ day.name }}</span>
           <span class="day-date">{{ day.date.getDate() }}</span>
+          <span class="day-name">{{ day.name }}</span>
         </div>
         <div class="day-slots">
           <div v-for="hour in hours" :key="hour" class="hour-grid-line"></div>
           <div
-            v-for="event in filteredEvents(day.date)"
+            v-for="(event, index) in filteredEvents(day.date)"
             :key="event.nome + event.data + event.horarioInicio"
             class="calendar-event"
+            :class="{ 'event-green': index % 2 === 0, 'event-red': index % 2 !== 0 }"
             :style="getEventStyle(event)"
           >
             <div class="event-name">{{ event.nome }}</div>
@@ -38,65 +46,85 @@
 </template>
 
 <script>
-import MenuAddTask from './MenuAddTask.vue'; // Mantenha se for usar, senão, pode remover
+import MenuAddTask from './MenuAddTask.vue';
 
 export default {
   name: 'Planner',
   components: {
-    MenuAddTask // Mantenha se for usar, senão, pode remover
+    MenuAddTask
   },
   data() {
     return {
-      tasks: [], // Array para armazenar as tarefas do localStorage
-      weekDays: [], // Array para armazenar os dias da semana a serem exibidos
-      hours: Array.from({ length: 15 }, (_, i) => i + 8), // Horas de 8 a 17 (10 horas no total, começando da 8)
-      // Ajuste o `length` e o `i + 8` conforme o range de horas que você quer exibir.
-      // Ex: Array.from({ length: 18 }, (_, i) => i) para horas de 0 a 17
+      tasks: [],
+      weekDays: [],
+      hours: Array.from({ length: 15 }, (_, i) => i + 8)
     };
   },
   mounted() {
-    // Carrega as tarefas do localStorage quando o componente é montado
     this.loadTasksFromLocalStorage();
-    // Gera os dias da semana para exibição
     this.generateWeekDays();
   },
   methods: {
     loadTasksFromLocalStorage() {
       try {
-        const storedTasks = localStorage.getItem('tasks'); // Supondo que você salve como 'minhasTarefas'
-        if (storedTasks) {
-          this.tasks = JSON.parse(storedTasks);
-          console.log('Tarefas carregadas do Local Storage:', this.tasks);
-        } else {
-          console.log('Nenhuma tarefa encontrada no Local Storage.');
-        }
+        const storedTasks = localStorage.getItem('tasks');
+        this.tasks = JSON.parse(storedTasks);
       } catch (e) {
-        console.error("Erro ao carregar tarefas do Local Storage:", e);
+        console.error('Erro ao carregar tarefas do Local Storage:', e);
         this.tasks = [];
       }
     },
-    generateWeekDays() {
-      const today = new Date();
-      // Encontra o domingo da semana atual
-      const sunday = new Date(today);
-      sunday.setDate(today.getDate() - today.getDay()); // today.getDay() retorna 0 para domingo, 1 para segunda, etc.
+    getDatesFromUrl() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const inicio = urlParams.get('inicio');
+      const fim = urlParams.get('fim');
 
-      this.weekDays = [];
-      for (let i = 0; i < 7; i++) {
-        const day = new Date(sunday);
-        day.setDate(sunday.getDate() + i);
-        this.weekDays.push({
-          name: this.getDayName(day.getDay()),
-          date: day,
-        });
+      let startDate = null;
+      let endDate = null;
+
+      if (inicio) {
+        startDate = new Date(inicio);
       }
+      if (fim) {
+        endDate = new Date(fim);
+      }
+      return { startDate, endDate };
+    },
+    generateWeekDays() {
+      const { startDate, endDate } = this.getDatesFromUrl();
+      const weekDays = [];
+
+      if (startDate && endDate && startDate <= endDate) {
+        let currentDate = new Date(startDate);
+        while (currentDate <= endDate) {
+          weekDays.push({
+            name: this.getDayName(currentDate.getDay()),
+            date: new Date(currentDate)
+          });
+          currentDate.setDate(currentDate.getDate() + 1);
+        }
+      } else {
+        const today = new Date();
+        const sunday = new Date(today);
+        sunday.setDate(today.getDate() - today.getDay());
+
+        for (let i = 0; i < 7; i++) {
+          const day = new Date(sunday);
+          day.setDate(sunday.getDate() + i);
+          weekDays.push({
+            name: this.getDayName(day.getDay()),
+            date: day
+          });
+        }
+      }
+      this.weekDays = weekDays;
     },
     getDayName(dayIndex) {
       const names = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SAB'];
       return names[dayIndex];
     },
     filteredEvents(date) {
-      const formattedDate = date.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+      const formattedDate = date.toISOString().split('T')[0];
       return this.tasks.filter(task => task.data === formattedDate);
     },
     getEventStyle(event) {
@@ -105,49 +133,42 @@ export default {
       const endHour = parseInt(event.horarioFim.split(':')[0]);
       const endMinute = parseInt(event.horarioFim.split(':')[1]);
 
-      // Calcula a posição de início (top) em pixels
-      // Cada hora tem 60px de altura (definido no CSS .hour-slot e .hour-grid-line)
-      // A primeira hora exibida é 8:00 (this.hours[0])
-      const minutesFromStartOfDay = (startHour * 60 + startMinute) - (this.hours[0] * 60);
-      const topPosition = (minutesFromStartOfDay / 60) * 60; // Convertendo minutos para pixels
-
-      // Calcula a duração em minutos
+      const minutesFromDisplayedStart = (startHour * 60 + startMinute) - (this.hours[0] * 60);
       const durationMinutes = (endHour * 60 + endMinute) - (startHour * 60 + startMinute);
-      const height = (durationMinutes / 60) * 60; // Convertendo duração em minutos para pixels
+
+      const topPosition = (minutesFromDisplayedStart / 60) * 50;
+      const height = (durationMinutes / 60) * 50;
 
       return {
         top: `${topPosition}px`,
-        height: `${height}px`,
+        height: `${height}px`
       };
-    },
-  },
+    }
+  }
 };
 </script>
 
 <style scoped>
-/* Estilos gerais do container do planner */
 .planner-container {
   display: flex;
-  flex-direction: column;
-  gap: 20px;
+  flex-direction: row;
+  gap: 15px;
   width: 100vw;
   box-sizing: border-box;
-  padding: 20px; /* Adicionado para um melhor espaçamento geral */
+  padding: 15px;
+  height: 100vh;
+  overflow: hidden;
 }
-
 .planner-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #eee;
+  flex-direction: column;
+  gap: 24px;
+  margin: 32px;
 }
-
 .planner-header span {
   font-weight: bold;
   font-size: 1.2em;
 }
-
 .planner-header button {
   padding: 8px 15px;
   margin-left: 10px;
@@ -156,111 +177,118 @@ export default {
   background-color: #f0f0f0;
   cursor: pointer;
 }
-
-/* Estilos da grade do calendário */
 .calendar-grid {
   display: grid;
-  grid-template-columns: 60px repeat(7, 1fr); /* Coluna de tempo + 7 colunas para os dias */
+  grid-template-columns: 60px repeat(v-bind(weekDays.length), 1fr);
   border: 1px solid #ddd;
   border-radius: 8px;
-  overflow: hidden; /* Garante que os cantos arredondados funcionem */
+  overflow: hidden;
   background-color: #fff;
+  flex-grow: 1;
+  min-height: 0;
 }
-
-/* Estilos da coluna de horários */
+.time-column,
+.day-column {
+  display: flex;
+  flex-direction: column;
+}
+.time-header,
+.day-header {
+  height: 50px;
+  border-bottom: 1px solid #ddd;
+  background-color: #f9f9f9;
+  flex-shrink: 0;
+}
 .time-column {
   border-right: 1px solid #eee;
   background-color: #f9f9f9;
 }
-
-.time-header {
-  height: 50px; /* Altura do cabeçalho do dia */
-  border-bottom: 1px solid #ddd;
-}
-
 .hour-slot {
-  height: 60px; /* Altura de cada slot de hora */
+  height: 50px;
+  min-height: 50px;
   display: flex;
   align-items: center;
   justify-content: flex-end;
   padding-right: 10px;
-  font-size: 0.85em;
+  font-size: 0.8em;
   color: #555;
   border-bottom: 1px solid #eee;
+  box-sizing: border-box;
 }
-
-/* Estilos das colunas dos dias */
+.hour-slot:last-child {
+  border-bottom: none;
+}
 .day-column {
-  display: flex;
-  flex-direction: column;
-  border-right: 1px solid #eee; /* Linha divisória entre os dias */
+  border-right: 1px solid #eee;
 }
-
 .day-column:last-child {
-  border-right: none; /* Remove a borda da última coluna */
+  border-right: none;
 }
-
 .day-header {
-  height: 50px; /* Altura do cabeçalho do dia */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border-bottom: 1px solid #ddd;
-  background-color: #f9f9f9;
-  font-weight: bold;
-  color: #333;
+  color: #828282;
 }
-
 .day-name {
   font-size: 0.9em;
 }
-
 .day-date {
-  font-size: 1.2em;
+  font-size: 1.1em;
   margin-top: 2px;
 }
-
 .day-slots {
-  position: relative; /* Para posicionar os eventos absolutamente */
-  flex-grow: 1; /* Ocupa o restante do espaço */
+  position: relative;
+  flex-grow: 1;
+  overflow-y: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
-
+.day-slots::-webkit-scrollbar {
+  display: none;
+}
 .hour-grid-line {
-  height: 60px; /* Altura de cada slot de hora */
-  border-bottom: 1px dashed #eee; /* Linha de grade para cada hora */
-  box-sizing: border-box; /* Garante que a borda não aumente a altura */
+  height: 50px;
+  min-height: 50px;
+  border-bottom: 1px dashed #eee;
+  box-sizing: border-box;
 }
-
 .hour-grid-line:last-child {
-    border-bottom: none; /* Remove a linha da última hora para evitar duplicidade na parte inferior */
+  border-bottom: none;
 }
-
-/* Estilos dos eventos do calendário */
 .calendar-event {
   position: absolute;
-  left: 5px; /* Pequeno espaçamento da borda */
-  right: 5px; /* Pequeno espaçamento da borda */
-  background-color: #4CAF50; /* Cor de fundo do evento (verde) */
+  left: 5px;
+  right: 5px;
   color: white;
   border-radius: 4px;
-  padding: 5px;
-  overflow: hidden; /* Esconde conteúdo extra se o evento for pequeno */
-  font-size: 0.8em;
+  padding: 4px;
+  overflow: hidden;
+  font-size: 0.75em;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  z-index: 10; /* Para garantir que o evento fique acima das linhas da grade */
-  box-sizing: border-box; /* Garante que padding e bordas não aumentem o tamanho do elemento */
+  z-index: 10;
+  box-sizing: border-box;
+  line-height: 1.3;
 }
-
+.event-green {
+  background-color: #38A3A5;
+}
+.event-red {
+  background-color: #137073;
+}
 .event-name {
   font-weight: bold;
-  white-space: nowrap; /* Evita que o nome do evento quebre em várias linhas */
-  overflow: hidden; /* Esconde texto que ultrapassa o limite */
-  text-overflow: ellipsis; /* Adiciona "..." se o texto for cortado */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-
 .event-time {
-  font-size: 0.75em;
+  font-size: 0.7em;
   margin-top: 2px;
+}
+.title {
+  font-size: 32px;
+  color: #137073;
 }
 </style>

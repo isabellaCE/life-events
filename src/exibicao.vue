@@ -8,14 +8,14 @@
       }}</v-btn>
       <div class="Exibicao-ListaTasks">
         <div v-for="(evento, index) in task" :key="index" :class="[
-          'Exibicao-Cartao',
-          index % 2 === 0 ? 'Exibicao-CartaoCor1' : 'Exibicao-CartaoCor2',
-          'Exibicao-CartaoHover'
-        ]" @click="editarTask(evento)">
+            'Exibicao-Cartao',
+            index % 2 === 0 ? 'Exibicao-CartaoCor1' : 'Exibicao-CartaoCor2',
+            'Exibicao-CartaoHover'
+          ]" @click="editarTask(evento)">
           <div class="Exibicao-TituloTaks">{{ evento.nome }}</div>
           <div class="Exibicao-Horario">{{ evento.horarioInicio }} - {{ evento.horarioFim }}</div>
           <div class="Exibicao-Data">
-            {{ new Date(evento.data).toLocaleDateString('pt-BR', {
+            {{ new Date(evento.data + 'T00:00:00').toLocaleDateString('pt-BR', {
               weekday: 'short', day: 'numeric', month: 'long',
               year: 'numeric'
             }) }}
@@ -31,7 +31,7 @@
       <v-btn icon class="Exibicao-BotaoCircular Exibicao-Vermelho" @click="confirmarExclusao">
         <v-icon>mdi-delete</v-icon>
       </v-btn>
-      <v-btn icon class="Exibicao-BotaoCircular Exibicao-Verde">
+      <v-btn icon class="Exibicao-BotaoCircular Exibicao-Verde" @click="goToCalendar">
         <v-icon>mdi-check</v-icon>
       </v-btn>
     </div>
@@ -60,16 +60,17 @@
 
   <CalendarioPopup v-if="mostrarCalendario" @confirmar-semana="selecionarSemana" @fechar="mostrarCalendario = false" />
 
-  <CadastroEvento :show="addTask" :task="taskSelecionada" @close="addTask = false; taskSelecionada = null" />
+  <CadastroEvento :show="addTask" :task="taskSelecionada" @close="addTask = false; taskSelecionada = null" @task-atualizada="carregarTasks" />
 </template>
 
 <script setup>
-import { ref, watchEffect } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import CalendarioPopup from './calendarioPopup.vue'
 import CadastroEvento from './MenuAddTask.vue'
 
 const route = useRoute()
+const router = useRouter();
 const mostrarCalendario = ref(false)
 const textoSemana = ref('Selecionar semana')
 const addTask = ref(false)
@@ -77,6 +78,30 @@ const task = ref([])
 const excluirTasks = ref(false)
 const confirmarTrocaSemana = ref(false)
 const novaSemanaTemp = ref({ inicio: null, fim: null })
+const taskSelecionada = ref(null)
+
+const carregarTasks = () => {
+  const tasksSalvas = JSON.parse(localStorage.getItem('tasks')) || []
+  task.value = tasksSalvas.sort((a, b) => {
+    const dataHoraA = new Date(`${a.data}T${a.horarioInicio}`)
+    const dataHoraB = new Date(`${b.data}T${b.horarioInicio}`)
+    return dataHoraA - dataHoraB
+  })
+}
+
+const goToCalendar = () => {
+  router.push({
+    path: '/planner',
+    query: { 
+      inicio: route.query.inicio,
+      fim: route.query.fim
+    }
+  });
+}
+
+onMounted(() => {
+  carregarTasks()
+})
 
 const semanaSalva = JSON.parse(localStorage.getItem('semanaSelecionada'))
 
@@ -95,22 +120,13 @@ if (semanaSalva && semanaSalva.inicio && semanaSalva.fim) {
   }
 }
 
-watchEffect(() => {
-  const tasks = JSON.parse(localStorage.getItem('tasks')) || []
-  task.value = tasks.sort((a, b) => {
-    const dataHoraA = new Date(`${a.data}T${a.horarioInicio}`)
-    const dataHoraB = new Date(`${b.data}T${b.horarioInicio}`)
-    return dataHoraA - dataHoraB
-  })
-})
-
 function confirmarExclusao() {
   excluirTasks.value = true
 }
 
 function apagarTodosEventos() {
   localStorage.removeItem('tasks')
-  task.value = []
+  carregarTasks()
   excluirTasks.value = false
 }
 
@@ -131,20 +147,17 @@ function confirmarTroca() {
   }))
 
   localStorage.removeItem('tasks')
-  task.value = []
+  carregarTasks()
 
   confirmarTrocaSemana.value = false
   mostrarCalendario.value = false
 }
-
-const taskSelecionada = ref(null)
 
 function editarTask(evento) {
   taskSelecionada.value = evento
   addTask.value = true
 }
 </script>
-
 
 <style>
 .Exibicao-ContainerCronograma {
