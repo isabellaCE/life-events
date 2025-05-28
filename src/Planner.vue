@@ -2,8 +2,12 @@
   <div class="planner-container">
     <div class="planner-header">
       <span>PLANNER</span>
-      <button>Exportar</button>
+
+      <button @click="exportToImage">Exportar</button>
+          
+    
       <button>Excluir</button>
+      
     </div>
 
     <!-- <MenuAddTask :show="true"></MenuAddTask> -->
@@ -38,6 +42,7 @@
 </template>
 
 <script>
+import html2canvas from 'html2canvas';
 import MenuAddTask from './MenuAddTask.vue'; // Mantenha se for usar, senão, pode remover
 
 export default {
@@ -61,6 +66,33 @@ export default {
     this.generateWeekDays();
   },
   methods: {
+     async exportToImage() {
+
+      const plannerElement = document.querySelector('.planner-container');
+      if (!plannerElement) {
+        console.error('Elemento do planner não encontrado.');
+        return;
+      }
+
+      try {
+        const canvas = await html2canvas(plannerElement, {
+          backgroundColor: null, // Para manter o fundo transparente
+          scale: 2 // Aumenta a resolução da imagem
+        });
+        const imageData = canvas.toDataURL('image/png');
+
+        // Cria um link para download da imagem
+        const link = document.createElement('a');
+        link.href = imageData; 
+        link.download = 'planner.png';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (error) {
+        console.error('Erro ao exportar o planner:', error);
+      }
+    },
+    
     loadTasksFromLocalStorage() {
       try {
         const storedTasks = localStorage.getItem('tasks'); // Supondo que você salve como 'minhasTarefas'
@@ -105,6 +137,8 @@ export default {
       const endHour = parseInt(event.horarioFim.split(':')[0]);
       const endMinute = parseInt(event.horarioFim.split(':')[1]);
 
+      
+
       // Calcula a posição de início (top) em pixels
       // Cada hora tem 60px de altura (definido no CSS .hour-slot e .hour-grid-line)
       // A primeira hora exibida é 8:00 (this.hours[0])
@@ -122,6 +156,32 @@ export default {
     },
   },
 };
+/*
+const exportPlanner = () => {
+   
+  if (!props.task) {
+    emit('close');
+    return;
+  }
+
+  let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+  tasks = tasks.filter(t =>
+    !(
+      t.nome === props.task.nome &&
+      t.data === props.task.data &&
+      t.horarioInicio === props.task.horarioInicio &&
+      t.horarioFim === props.task.horarioFim
+    )
+  );
+
+  localStorage.setItem('tasks', JSON.stringify(tasks));
+  emit('close');
+ 
+  console.log("Entrou")
+}
+ ... */
+
 </script>
 
 <style scoped>
@@ -177,6 +237,8 @@ export default {
   height: 50px; /* Altura do cabeçalho do dia */
   border-bottom: 1px solid #ddd;
 }
+
+
 
 .hour-slot {
   height: 60px; /* Altura de cada slot de hora */
