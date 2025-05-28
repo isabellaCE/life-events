@@ -32,6 +32,9 @@
       </div>
     </v-navigation-drawer>
   </div>
+  <v-snackbar v-model="snackbar.show" :color="snackbar.color" location="top right">
+    {{ snackbar.message }}
+  </v-snackbar>
 </template>
 
 <script setup>
@@ -53,13 +56,26 @@ const taskData = ref({
   observacao: ''
 })
 
+const snackbar = ref({
+  show: false,
+  message: '',
+  color: 'success'
+});
+
+const showToast = (message, color) => {
+  snackbar.value.message = message;
+  snackbar.value.color = color;
+  snackbar.value.show = true;
+};
+
+
 const closeDrawer = () => {
   emit('close')
 }
 
 const saveTask = () => {
   if (!taskData.value.nome || !taskData.value.data || !taskData.value.horarioInicio || !taskData.value.horarioFim) {
-    alert('Por favor, preencha todos os campos obrigatórios');
+    showToast('Por favor, preencha todos os campos obrigatórios', 'error');
     return;
   }
 
@@ -70,11 +86,11 @@ const saveTask = () => {
     if (index !== -1) {
       tasks[index] = { ...taskData.value };
     }
-    alert('Tarefa editada com sucesso!');
+    showToast('Tarefa editada com sucesso!', 'success');
   } else {
     taskData.value.id = Date.now();
     tasks.push({ ...taskData.value });
-    alert('Tarefa adicionada com sucesso!');
+    showToast('Tarefa adicionada com sucesso!', 'success');
   }
 
   localStorage.setItem('tasks', JSON.stringify(tasks));
@@ -93,7 +109,7 @@ const deleteTask = () => {
 
   localStorage.setItem('tasks', JSON.stringify(tasks));
   emit('task-atualizada');
-  alert('Tarefa excluída com sucesso!');
+  showToast('Tarefa excluída com sucesso!', 'success');
   closeDrawer();
 }
 
@@ -136,9 +152,11 @@ watch(() => props.show, (newVal) => {
   background-color: rgba(0, 0, 0, 0.3);
   z-index: 10;
 }
+
 .v-navigation-drawer {
   z-index: 11;
 }
+
 .MenuAddTask-Form {
   padding: 64px 32px;
   display: flex;
@@ -149,12 +167,14 @@ watch(() => props.show, (newVal) => {
   font-weight: 400;
   font-style: normal;
 }
+
 .MenuAddTask-DateContainer {
   padding: 8px;
   text-align: justify;
   border: 1px solid #D9D9D9;
   border-radius: 8px;
 }
+
 .MenuAddTask-InputsContainer {
   height: 60px;
   padding: 4px 32px;
@@ -162,13 +182,16 @@ watch(() => props.show, (newVal) => {
   align-items: center;
   justify-content: space-between;
 }
+
 .MenuAddTask-Title {
   padding: 8px 4px;
 }
+
 .MenuAddTask-ButtonsContainer {
   display: flex;
   justify-content: space-around;
 }
+
 input[type="date"],
 input[type="time"] {
   border: 1px solid #ccc;
