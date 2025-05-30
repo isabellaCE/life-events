@@ -63,7 +63,8 @@ export default {
     return {
       tasks: [],
       weekDays: [],
-      hours: Array.from({ length: 15 }, (_, i) => i + 8)
+      hours: Array.from({ length: 15 }, (_, i) => i + 8),
+      excluirPlanner: false
     };
   },
   mounted() {
