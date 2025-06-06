@@ -321,7 +321,6 @@ export default {
 .hour-grid-line {
   flex: 1;
   min-height: 0;
-  border-bottom: 1px dashed #eee;
   box-sizing: border-box;
 }
 
