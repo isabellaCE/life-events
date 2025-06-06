@@ -8,9 +8,19 @@
         </v-btn>
       </div>
       <div>
-        <v-btn color="#A20000" @click="deleteTasks">
+        <v-btn color="#A20000" @click="confirmarExclusao">
           Excluir <v-icon right>mdi-delete</v-icon>
         </v-btn>
+      </div>
+    </div>
+
+    <div v-if="excluirPlanner" class="Planner-PopupOverlay" @click.self="excluirPlanner = false">
+      <div class="Planner-Popup">
+        <p class="Planner-PopupText">Deseja excluir o planner?</p>
+        <div class="Planner-PopupBotoes">
+          <v-btn class="Planner-BotaoS" @click="apagarPlanner">Sim</v-btn>
+          <v-btn class="Planner-BotaoN" @click="excluirPlanner = false">Não</v-btn>
+        </div>
       </div>
     </div>
 
@@ -56,7 +66,8 @@ export default {
     return {
       tasks: [],
       weekDays: [],
-      hours: Array.from({ length: 15 }, (_, i) => i + 8)
+      hours: Array.from({ length: 15 }, (_, i) => i + 8),
+      excluirPlanner: false
     };
   },
   mounted() {
@@ -173,19 +184,18 @@ export default {
         console.error('Erro ao exportar planner:', error);
       }
     },
-    deleteTasks() {
-      try {
-        localStorage.removeItem('tasks');
-        setTimeout(() => {
-          this.$router.push('/exibicao');
-        }, 500);
-        
-      } catch (error) {
-        console.error('Erro ao excluir tarefas:', error);
-      }
+    confirmarExclusao() {
+      this.excluirPlanner = true;
+    },
+    apagarPlanner() {
+      localStorage.removeItem('tasks');
+      this.tasks = [];
+      this.excluirPlanner = false;
+      this.$router.push('/exibicao');
     }
   }
 };
+
 </script>
 
 <style scoped>
@@ -357,5 +367,60 @@ export default {
 .title {
   font-size: 32px;
   color: #137073;
+}
+
+.Planner-PopupOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.Planner-Popup {
+  background-color: #f2f2f2;
+  padding: 2.5rem 3rem;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+  max-width: 400px;
+  width: 90%;
+}
+
+.Planner-PopupText {
+  margin-bottom: 1.5rem;
+  font-weight: bold;
+  color: #555;
+}
+
+.Planner-PopupBotoes {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.Planner-BotaoS {
+  background-color: #00796B;
+  color: white;
+  border: none;
+  padding: 0.5rem 1.5rem;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.Planner-BotaoN {
+  background-color: #B71C1C;
+  color: white;
+  border: none;
+  padding: 0.5rem 1.5rem;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
 }
 </style>
